@@ -1,24 +1,20 @@
-SO_NAME = "lpsolve.so"
+#!/usr/bin/env rake
+# -*- Ruby -*-
+require 'rubygems'
 
-# ------- Default Package ----------
-LPSOLVE_VERSION = open("VERSION").read.chomp
-PKG_NAME = 'lpsolve'
+ROOT_DIR = File.dirname(__FILE__)
 
-FILES = FileList[
-  'Rakefile',
-  'VERSION',
-  'doc/*',
-  'example/*',
-  'ext/*.c',
-  'ext/Makefile',
-  'ext/extconf.rb',
-  'test/*.rb',
-  'test/*.right',
-  'test/Rakefile',
-]
+@gemspec ||= eval(File.read('.gemspec'), binding, '.gemspec')
 
 require 'rake/gempackagetask'
 task :default => [:package]
+
+desc "Install the gem locally"
+task :install => :gem do
+  Dir.chdir(ROOT_DIR) do
+    sh %{gem install --local pkg/#{gemspec.name}-#{gemspec.version}}
+  end
+end
 
 # --- Redo Rake::PackageTask::define so tar uses -h to include
 # files of a symbolic link.
@@ -88,44 +84,9 @@ module Rake
 end
 
 # ---------  GEM package ------
-require 'rubygems'
-desc "Create GEM spec file"
-default_spec = Gem::Specification.new do |spec|
-  spec.name = PKG_NAME
-  
-  spec.homepage = "http://rubyforge.org/projects/lpsolve/"
-  spec.summary = "Ruby interface lpsolve (Mixed Integer Linear Programming, MILP, solver)"
-  spec.description = <<-EOF
-A library for using CD-ROM and CD image access. Applications wishing to be
-oblivious of the OS- and device-dependent properties of a CD-ROM or of
-the specific details of various CD-image formats may benefit from
-using this library. A library for working with ISO-9660 filesystems
-is included.
-EOF
-
-  spec.version = LPSOLVE_VERSION
-
-  spec.author = "Rocky Bernstein"
-  spec.email = "rocky@ce-interactive.com"
-  spec.platform = Gem::Platform::RUBY
-  spec.require_path = "lib" 
-  spec.bindir = "bin"
-  spec.executables = []
-  spec.extensions = ["ext/extconf.rb"]
-  spec.files = FILES.to_a  
-  spec.test_files = FileList['test/*.rb', 'test/*.right', 'test/Rakefile']
-
-  spec.required_ruby_version = '>= 1.8.4'
-  spec.date = Time.now
-  spec.rubyforge_project = 'lpsolve'
-  
-  # rdoc
-  # spec.has_rdoc = false
-end
-
 # Rake task to build the default package
 desc "Build all the packages (gem, tgz, zip)"
-Rake::GemPackageTask.new(default_spec) do |pkg|
+Rake::GemPackageTask.new(@gemspec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
 end
@@ -167,10 +128,8 @@ Rake::TestTask.new('test' => :lib) do |t|
 end
 
 # 'check' is an the same thing as 'test'
-Rake::TestTask.new('check') do |t|
-  t.pattern = 'test/*.rb'
-  t.warning = true
-end
+desc "same as test"
+task :check => :test
 
 # ---------  Clean derived files ------
 task :clean do
