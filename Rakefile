@@ -4,7 +4,9 @@ require 'rubygems'
 
 ROOT_DIR = File.dirname(__FILE__)
 
-@gemspec ||= eval(File.read('.gemspec'), binding, '.gemspec')
+def gemspec
+  @gemspec ||= eval(File.read('.gemspec'), binding, '.gemspec')
+end
 
 require 'rake/gempackagetask'
 task :default => [:package]
@@ -86,7 +88,7 @@ end
 # ---------  GEM package ------
 # Rake task to build the default package
 desc "Build all the packages (gem, tgz, zip)"
-Rake::GemPackageTask.new(@gemspec) do |pkg|
+Rake::GemPackageTask.new(gemspec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
 end
