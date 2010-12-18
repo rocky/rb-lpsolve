@@ -154,17 +154,6 @@ end
 ##end
 
 
-desc "Publish rubycdio to RubyForge."
-task :publish do 
-  require 'rake/contrib/sshpublisher'
-  
-  # Get ruby-debug path
-  ruby_debug_path = File.expand_path(File.dirname(__FILE__))
-
-  publisher = Rake::SshDirPublisher.new("rockyb@rubyforge.org",
-        "/var/www/gforge-projects/rbcdio", ruby_debug_path)
-end
-
 desc 'Generate Doxygen Documentation'
 task :doc do
   system("cd doc && ./run_doxygen")

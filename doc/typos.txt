@@ -1,0 +1,29 @@
+print routine: don't show 0's in as coefficients. Show SOS sets
+Don't show anything if no columns. 
+
+Automatically adjust width of 1st column, row names, based on the
+width of the longest row name.
+
+is_debug:
+---------
+mend -> meant.
+
+get_solutioncount
+algoritm -> algorithm
+
+SOS.html:
+---------
+
+In SOS example 
+
+  sos
+  SOS: x1,x2,x3,x4,x5 <= 2;
+
+Can't deal with <=2. Use instead:
+
+  sos2
+  sos: x1,x2,x3,x4,x5;
+ 
+is_SOS_var:
+----------
+   Small wording things. should for must.

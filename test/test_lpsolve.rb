@@ -355,6 +355,9 @@ class TestLPSolve < Test::Unit::TestCase
            [lp.time_total, lp.time_elapsed]))
 
     filter = Proc.new{|got_lines, correct_lines|
+      [got_lines[14]].flatten.each do |s|
+        s.sub!(/\|\|[*]\|\| = .+/, '||*|| = 0') if s
+      end
       [got_lines[49]].flatten.each do |s|
         s.sub!(/-1e[+]30\s+.*\s+-1e[+]30/, "-1e+30\t\t0.0\t\t-1e+30") if s
       end

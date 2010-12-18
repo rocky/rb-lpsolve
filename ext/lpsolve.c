@@ -255,7 +255,7 @@ if (NULL == lp) return Qnil;			\
 	     __FUNCTION__);					\
       return Qfalse;						\
     }								\
-    RETURN_BOOL(fn(lp, RSTRING(str)->ptr));			\
+    RETURN_BOOL(fn(lp, RSTRING_PTR(str)));			\
   }
 
 /** \def LPSOLVE_1_IN_STATUS_OUT 
@@ -292,6 +292,21 @@ static VALUE								\
   } else {								\
     RETURN_BOOL(fn(lp, FIX2INT(column_num), Qtrue == new_bool));	\
   }									\
+}
+
+
+static VALUE
+lpsolve_set_binary (VALUE self, VALUE column_num, 	VALUE new_bool)
+{
+  INIT_LP;
+  if (new_bool != Qtrue && new_bool != Qfalse && new_bool != Qnil) {
+    report(lp, IMPORTANT,
+	   "%s: Parameter is not a boolean or nil.\n",
+	   __FUNCTION__);
+    return Qfalse;
+  } else {
+    RETURN_BOOL(set_binary(lp, FIX2INT(column_num), Qtrue == new_bool));
+  }
 }
 
 
@@ -370,7 +385,7 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
   }
   
   /***FIXME: combine common parts of this with add_constraintex ****/
-  count   = RARRAY(row_coeffs)->len;
+  count   = RARRAY_LEN(row_coeffs);
 
   if (0 == count)  {
     report(lp, IMPORTANT, 
@@ -382,7 +397,7 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
   colno   = ALLOC_N(int, count);
   row     = ALLOC_N(REAL, count);
 
-  p_row_coeff = RARRAY(row_coeffs)->ptr;
+  p_row_coeff = RARRAY_PTR(row_coeffs);
   for (i = 0; i < count; i++) {
     int i_col;
     if (TYPE(*p_row_coeff) != T_ARRAY) {
@@ -391,13 +406,13 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
 	     __FUNCTION__, i);
       goto done;
     }
-    if (RARRAY(*p_row_coeff)->len != 2) {
+    if (RARRAY_LEN(*p_row_coeff) != 2) {
       report(lp, IMPORTANT, 
 	     "%s: row coeffient element %d is not an array tuple.\n", 
 	     __FUNCTION__, i);
       goto done;
     } else {
-      VALUE *tuple = RARRAY(*p_row_coeff)->ptr;
+      VALUE *tuple = RARRAY_PTR(*p_row_coeff);
       if (TYPE(tuple[0]) != T_FIXNUM) {
 	report(lp, IMPORTANT, 
 	       "%s: Column number, first element, of row coefficients at " \
@@ -432,7 +447,7 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
   if (b_ret) {
     ret = INT2FIX(lp->rows);
     if (name != Qnil) 
-      set_row_name(lp, lp->rows, RSTRING(name)->ptr);
+      set_row_name(lp, lp->rows, RSTRING_PTR(name));
   }
 
  done:
@@ -497,7 +512,7 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
     return Qnil;
   }
 
-  count   = RARRAY(sos_vars)->len;
+  count   = RARRAY_LEN(sos_vars);
 
   if (0 == count)  {
     report(lp, IMPORTANT, 
@@ -509,20 +524,20 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
   vars    = ALLOC_N(int, count);
   weights = ALLOC_N(double, count);
 
-  p_sos_var = RARRAY(sos_vars)->ptr;
+  p_sos_var = RARRAY_PTR(sos_vars);
   for (i = 0; i < count; i++) {
     if (TYPE(*p_sos_var) != T_ARRAY) {
       report(lp, IMPORTANT, 
 	     "%s: SOS vars element %d is not an array.\n", __FUNCTION__, i);
       goto done;
     }
-    if (RARRAY(*p_sos_var)->len != 2) {
+    if (RARRAY_LEN(*p_sos_var) != 2) {
       report(lp, IMPORTANT, 
 	     "%s: SOS vars element %d is not an array tuple.\n", __FUNCTION__,
 	     i);
       goto done;
     } else {
-      VALUE *tuple = RARRAY(*p_sos_var)->ptr;
+      VALUE *tuple = RARRAY_PTR(*p_sos_var);
       if (TYPE(tuple[0]) != T_FIXNUM) {
 	report(lp, IMPORTANT, 
 	       "%s: First element of SOS vars at tuple %d " \
@@ -540,7 +555,7 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
     }
     p_sos_var++;
   }
-  i_ret = add_SOS(lp, RSTRING(name)->ptr, i_sos_type, i_priority, 
+  i_ret = add_SOS(lp, RSTRING_PTR(name), i_sos_type, i_priority, 
 		  count, vars, weights);
   if (i_ret != 0)
     ret = INT2FIX(i_ret);
@@ -719,7 +734,7 @@ lpsolve_get_col_num(VALUE self, VALUE column_name)
 	   __FUNCTION__);
     return Qnil;
   } else {
-    int retval = get_col_num(lp, RSTRING(column_name)->ptr);
+    int retval = get_col_num(lp, RSTRING_PTR(column_name));
     return (-1 == retval) ? Qnil : INT2FIX(retval);
   }
 }
@@ -1551,7 +1566,7 @@ lpsolve_read_LP(VALUE model, VALUE filename, VALUE verbosity,
       return Qnil;
   }
   
-  lp = read_LP(RSTRING(filename)->ptr, verbosity, RSTRING(model_name)->ptr);
+  lp = read_LP(RSTRING_PTR(filename), verbosity, RSTRING_PTR(model_name));
   if (NULL == lp) {
     return Qnil;
   } else {
@@ -1584,7 +1599,7 @@ lpsolve_read_MPS(VALUE module, VALUE filename, VALUE verbosity)
       return Qnil;
   }
   
-  lp = read_MPS(RSTRING(filename)->ptr, verbosity);
+  lp = read_MPS(RSTRING_PTR(filename), verbosity);
   if (NULL == lp) {
     return Qnil;
   } else {
@@ -1619,7 +1634,7 @@ lpsolve_print_str(VALUE self, VALUE str)
     return Qfalse;
   }
   
-  print_str(lp, RSTRING(str)->ptr);
+  print_str(lp, RSTRING_PTR(str));
   return Qtrue;
 }
 
@@ -1758,7 +1773,9 @@ LPSOLVE_1_BOOL_IN_BOOL_OUT(set_add_rowmode);
     @return \a true if the operation was successful, \a false if there
     was an error.
 */
+#if 0
 LPSOLVE_SET_VARTYPE(set_binary)
+#endif
 
 /** A wrapper for set_bounds().
 
@@ -1812,7 +1829,7 @@ lpsolve_set_col_name(VALUE self, VALUE column_num, VALUE new_name)
     return Qnil;
   }
 
-  return set_col_name(lp, FIX2INT(column_num), RSTRING(new_name)->ptr) ?
+  return set_col_name(lp, FIX2INT(column_num), RSTRING_PTR(new_name)) ?
     Qtrue: Qfalse;
 }
 
@@ -1973,11 +1990,11 @@ lpsolve_set_obj_fnex(VALUE self, VALUE row_coeffs)
     return Qnil;
   }
 
-  count   = RARRAY(row_coeffs)->len;
+  count   = RARRAY_LEN(row_coeffs);
   colno   = ALLOC_N(int, count);
   row     = ALLOC_N(REAL, count);
 
-  p_row_coeff = RARRAY(row_coeffs)->ptr;
+  p_row_coeff = RARRAY_PTR(row_coeffs);
   for (i = 0; i < count; i++) {
     int i_col;
     if (TYPE(*p_row_coeff) != T_ARRAY) {
@@ -1986,13 +2003,13 @@ lpsolve_set_obj_fnex(VALUE self, VALUE row_coeffs)
 	     __FUNCTION__, i);
       goto done;
     }
-    if (RARRAY(*p_row_coeff)->len != 2) {
+    if (RARRAY_LEN(*p_row_coeff) != 2) {
       report(lp, IMPORTANT, 
 	     "%s: row coeffient element %d is not an array tuple.\n", 
 	     __FUNCTION__, i);
       goto done;
     } else {
-      VALUE *tuple = RARRAY(*p_row_coeff)->ptr;
+      VALUE *tuple = RARRAY_PTR(*p_row_coeff);
       if (TYPE(tuple[0]) != T_FIXNUM) {
 	report(lp, IMPORTANT, 
 	       "%s: Column number, first element, of row coefficients at " \
@@ -2150,7 +2167,7 @@ lpsolve_set_row_name(VALUE self, VALUE row_num, VALUE new_name)
     return Qfalse;
   }
 
-  RETURN_BOOL(set_row_name(lp, FIX2INT(row_num), RSTRING(new_name)->ptr));
+  RETURN_BOOL(set_row_name(lp, FIX2INT(row_num), RSTRING_PTR(new_name)));
 }
 
 /** A wrapper for set_semicont().
@@ -2339,7 +2356,7 @@ static VALUE
 lpsolve_str_add_constraint(VALUE self, VALUE constraint, 
 			  VALUE compare, VALUE num_constraints) 
 {
-  char *psz_constraint = RSTRING(constraint)->ptr;
+  char *psz_constraint = RSTRING_PTR(constraint);
   int  i_compare = NUM2INT(compare);
   int  i_constraints = NUM2INT(num_constraints);
   lprec *lp;
@@ -2356,7 +2373,7 @@ lpsolve_str_add_constraint(VALUE self, VALUE constraint,
 static VALUE
 lpsolve_str_set_obj_fn(VALUE self, VALUE obj_fn) 
 {
-  char *psz_obj_fn = RSTRING(obj_fn)->ptr;
+  char *psz_obj_fn = RSTRING_PTR(obj_fn);
   lprec *lp;
   Data_Get_Struct(self, lprec, lp);
   RETURN_BOOL(str_set_obj_fn(lp, psz_obj_fn));
@@ -2517,7 +2534,7 @@ static VALUE lpsolve_write_lp(int argc, VALUE *argv, VALUE self)
 	       __FUNCTION__);
 	return Qnil;
       } else
-	RETURN_BOOL(write_lp(lp, RSTRING(filename)->ptr));
+	RETURN_BOOL(write_lp(lp, RSTRING_PTR(filename)));
     default:
       rb_raise(rb_eArgError, "wrong number of arguments (%d for 0 or 1)", 
 	       i_scanned);
@@ -2561,7 +2578,7 @@ static VALUE lpsolve_write_mps(int argc, VALUE *argv, VALUE self)
 	       __FUNCTION__);
 	return Qnil;
       } else
-	RETURN_BOOL(write_mps(lp, RSTRING(filename)->ptr));
+	RETURN_BOOL(write_mps(lp, RSTRING_PTR(filename)));
     default:
       rb_raise(rb_eArgError, "wrong number of arguments (%d for 0 or 1)", 
 	       i_scanned);
@@ -2881,4 +2898,3 @@ void print(lprec *lp)
   }
   fflush(lp->outstream);
 }
-
