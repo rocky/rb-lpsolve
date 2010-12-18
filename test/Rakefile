@@ -1,0 +1,8 @@
+task :default => [:test]
+# ---------  Regression tests ------
+require 'rake/testtask'
+desc "Run regression tests"
+Rake::TestTask.new('test') do |t|
+  t.pattern = '*.rb'
+  t.warning = true
+end
