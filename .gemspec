@@ -24,20 +24,17 @@ desc "Create GEM spec file"
 default_spec = Gem::Specification.new do |spec|
   spec.name = PKG_NAME
   
-  spec.homepage = "http://rubyforge.org/projects/lpsolve/"
-  spec.summary = "Ruby interface lpsolve (Mixed Integer Linear Programming, MILP, solver)"
+  spec.homepage = "http://github.org/rb-lpsolve/"
+  spec.summary = "Ruby interface to lpsolve version 5.5.0.10"
   spec.description = <<-EOF
-A library for using CD-ROM and CD image access. Applications wishing to be
-oblivious of the OS- and device-dependent properties of a CD-ROM or of
-the specific details of various CD-image formats may benefit from
-using this library. A library for working with ISO-9660 filesystems
-is included.
+A Ruby library for using simplex-method Mixed Integer Linear Programming solver, lpsolve version 0.5.5. 
+Pick up the C code for lpsolve at http://bashdb.sf.net/lpsolve-5.5.0.10i.tar.bz2
 EOF
 
   spec.version = LPSOLVE_VERSION
 
   spec.author = "Rocky Bernstein"
-  spec.email = "rocky@ce-interactive.com"
+  spec.email = "rockby@rubyforge.org"
   spec.platform = Gem::Platform::RUBY
   spec.require_path = "lib" 
   spec.bindir = "bin"

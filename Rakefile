@@ -18,73 +18,6 @@ task :install => :gem do
   end
 end
 
-# --- Redo Rake::PackageTask::define so tar uses -h to include
-# files of a symbolic link.
-module Rake
-  class PackageTask < TaskLib
-    # Create the tasks defined by this task library.
-    def define
-      fail "Version required (or :noversion)" if @version.nil?
-      @version = nil if :noversion == @version
-
-      desc "Build all the packages"
-      task :package => [:lib]
-      
-      desc "Force a rebuild of the package files"
-      task :repackage => [:clobber_package, :package]
-      
-      desc "Remove package products" 
-      task :clobber_package do
-	rm_r package_dir rescue nil
-      end
-
-      task :clobber => [:clobber_package]
-
-      [
-	[need_tar, tgz_file, "z"],
-	[need_tar_gz, tar_gz_file, "z"],
-	[need_tar_bz2, tar_bz2_file, "j"]
-      ].each do |(need, file, flag)|
-	if need
-	  task :package => ["#{package_dir}/#{file}"]
-	  file "#{package_dir}/#{file}" => [package_dir_path] + package_files do
-	    chdir(package_dir) do
-	      sh %{tar #{flag}hcvf #{file} #{package_name}}
-	    end
-	  end
-	end
-      end
-      
-      if need_zip
-	task :package => ["#{package_dir}/#{zip_file}"]
-	file "#{package_dir}/#{zip_file}" => [package_dir_path] + package_files do
-	  chdir(package_dir) do
-	    sh %{zip -r #{zip_file} #{package_name}}
-	  end
-	end
-      end
-
-      directory package_dir
-
-      file package_dir_path => @package_files do
-	mkdir_p package_dir rescue nil
-	@package_files.each do |fn|
-	  f = File.join(package_dir_path, fn)
-	  fdir = File.dirname(f)
-	  mkdir_p(fdir) if !File.exist?(fdir)
-	  if File.directory?(fn)
-	    mkdir_p(f)
-	  else
-	    rm_f f
-	    safe_ln(fn, f)
-	  end
-	end
-      end
-      self
-    end
-  end
-end
-
 # ---------  GEM package ------
 # Rake task to build the default package
 desc "Build all the packages (gem, tgz, zip)"
@@ -117,7 +50,7 @@ end
 ##end
 
 
-desc 'Generate Doxygen Documentation'
+desc 'generate Doxygen Documentation'
 task :doc do
   system("cd doc && ./run_doxygen")
 end
@@ -133,12 +66,12 @@ end
 desc "same as test"
 task :check => :test
 
-# ---------  Clean derived files ------
+desc "clean derived files"
 task :clean do
   system("cd ext && rm Makefile *.o *.so")
 end
 
-# ---------  Clean derived files ------
+desc "make C extension"
 task :lib do
   system("cd ext && ruby extconf.rb && make")
 end
