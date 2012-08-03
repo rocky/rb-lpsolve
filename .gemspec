@@ -24,7 +24,7 @@ desc "Create GEM spec file"
 default_spec = Gem::Specification.new do |spec|
   spec.name = PKG_NAME
   
-  spec.homepage = "http://github.org/rb-lpsolve/"
+  spec.homepage = "http://github.org/rocky/rb-lpsolve/"
   spec.summary = "Ruby interface to lpsolve version 5.5.0.10"
   spec.description = <<-EOF
 A Ruby library for using simplex-method Mixed Integer Linear Programming solver, lpsolve version 0.5.5. 
