@@ -57,7 +57,7 @@ end
 
 require 'rake/testtask'
 desc 'Test the lpsolve shared object.'
-Rake::TestTask.new('test' => :lib) do |t|
+Rake::TestTask.new('test' => :ext) do |t|
   t.pattern = 'test/*.rb'
   t.warning = true
 end
@@ -68,11 +68,21 @@ task :check => :test
 
 desc "clean derived files"
 task :clean do
-  system("cd ext && rm Makefile *.o *.so")
+  Dir.chdir File.join(ROOT_DIR, 'ext') do
+    if File.exist?('Makefile')
+      sh 'make clean'
+      rm 'Makefile'
+    end
+    derived_files = Dir.glob('.o') + Dir.glob('*.so')
+    rm derived_files unless derived_files.empty?
+  end
 end
 
 desc "make C extension"
-task :lib do
-  system("cd ext && ruby extconf.rb && make")
+task :'ext/Makefile'=>:ext
+task :ext do
+  Dir.chdir('ext') do
+    system("#{Gem.ruby} extconf.rb && make")
+  end
 end
 
