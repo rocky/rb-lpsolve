@@ -84,7 +84,7 @@ class TestLPSolve < Test::Unit::TestCase
         assert_equal(val, eval('LPSolve::' + sym))
     end
     
-    # Brand-and-bound rules
+    # Branch-and-bound rules
     [
      [   0, 'NODE_FIRSTSELECT'], 
      [   1, 'NODE_GAPSELECT'], 
