@@ -1,4 +1,4 @@
-/*  Copyright (C) 2007, 2010 Rocky Bernstein <rockyb@rubyforge.org>
+/*  Copyright (C) 2007, 2010, 2012 Rocky Bernstein <rockyb@rubyforge.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,17 +40,17 @@ static int
 get_col_num(lprec *lp, const char *psz_col_name) 
 {
   if (lp->names_used && lp->use_col_names) {
-    unsigned int i;
+    int i;
     for (i=0; i<= lp->columns; i++) {
       if ((lp->col_name[i] != NULL) && (lp->col_name[i]->name != NULL)) {
 #ifdef Paranoia
       if(lp->col_name[i]->index != i) 
-	report(lp, SEVERE, 
-	       "%s: Inconsistent column ordinal %d vs %d\n",
-	       __FUNCTION__, i, lp->col_name[i]->index);
+        report(lp, SEVERE, 
+               "%s: Inconsistent column ordinal %d vs %d\n",
+               __FUNCTION__, i, lp->col_name[i]->index);
 #endif
       if (0 == strcmp(psz_col_name, lp->col_name[i]->name))
-	return i;
+        return i;
       }
     }
   }
@@ -64,10 +64,10 @@ Boilerplate beginning of all functions: declares a pointer to the lp
 structure, gets the internal object from Ruby (basically "self") and if
 that's nil, fail immediately.
 */
-#define INIT_LP					\
-lprec *lp;					\
-Data_Get_Struct(self, lprec, lp);		\
-if (NULL == lp) return Qnil;			\
+#define INIT_LP                                 \
+lprec *lp;                                      \
+Data_Get_Struct(self, lprec, lp);               \
+if (NULL == lp) return Qnil;                    \
 
 
 #define RETURN_BOOL(x) \
@@ -80,12 +80,12 @@ if (NULL == lp) return Qnil;			\
    boolean static back to Ruby.  That is, if lp is not \a NULL we
    return Qtrue. If lp is \a NULL, we return \a Qfalse.
 */
-#define LPSOLVE_0_IN_BOOL_OUT(fn)			\
-  static VALUE					        \
-  lpsolve_ ## fn(VALUE self)				\
-  {							\
-    INIT_LP;						\
-    RETURN_BOOL(fn(lp));				\
+#define LPSOLVE_0_IN_BOOL_OUT(fn)                       \
+  static VALUE                                          \
+  lpsolve_ ## fn(VALUE self)                            \
+  {                                                     \
+    INIT_LP;                                            \
+    RETURN_BOOL(fn(lp));                                \
   }
 
 /** \def LPSOLVE_0_IN_INT_OUT 
@@ -95,12 +95,12 @@ if (NULL == lp) return Qnil;			\
    integer return value back to Ruby.  That is, if \a lp is not \a
    NULL. If it's \a NULL, we return \a nil.
 */
-#define LPSOLVE_0_IN_INT_OUT(fn)				\
-  static VALUE							\
-  lpsolve_ ## fn(VALUE self)					\
-  {								\
-    INIT_LP;							\
-    return (NULL != lp) ? INT2FIX(fn(lp)) : Qnil;		\
+#define LPSOLVE_0_IN_INT_OUT(fn)                                \
+  static VALUE                                                  \
+  lpsolve_ ## fn(VALUE self)                                    \
+  {                                                             \
+    INIT_LP;                                                    \
+    return (NULL != lp) ? INT2FIX(fn(lp)) : Qnil;               \
   }
 
 /** \def LPSOLVE_0_IN_NUM_OUT 
@@ -110,12 +110,12 @@ if (NULL == lp) return Qnil;			\
    number return value back to Ruby.  That is, if \a lp is not \a
    NULL. If it's \a NULL, we return \a nil.
 */
-#define LPSOLVE_0_IN_NUM_OUT(fn)				\
-  static VALUE							\
-  lpsolve_ ## fn(VALUE self)					\
-  {								\
-    INIT_LP;							\
-    return rb_float_new(fn(lp));				\
+#define LPSOLVE_0_IN_NUM_OUT(fn)                                \
+  static VALUE                                                  \
+  lpsolve_ ## fn(VALUE self)                                    \
+  {                                                             \
+    INIT_LP;                                                    \
+    return rb_float_new(fn(lp));                                \
   }
 
 /** \def LPSOLVE_0_IN_STATUS_OUT
@@ -125,13 +125,13 @@ if (NULL == lp) return Qnil;			\
    boolean statuc back to Ruby.  That is, if lp is not \a NULL we
    return Qtrue. If lp is \a NULL, we return \a Qfalse.
 */
-#define LPSOLVE_0_IN_STATUS_OUT(fn)			\
-  static VALUE					        \
-  lpsolve_ ## fn(VALUE self)				\
-  {							\
-    INIT_LP;						\
-    fn(lp);						\
-    return Qtrue;					\
+#define LPSOLVE_0_IN_STATUS_OUT(fn)                     \
+  static VALUE                                          \
+  lpsolve_ ## fn(VALUE self)                            \
+  {                                                     \
+    INIT_LP;                                            \
+    fn(lp);                                             \
+    return Qtrue;                                       \
   }
 
 /** \def LPSOLVE_0_IN_TIME_OUT 
@@ -140,15 +140,15 @@ if (NULL == lp) return Qnil;			\
    other than self returns a floating point number which is the 
    difference between to floating-point fields - time values.
 */
-#define LPSOLVE_0_IN_TIME_OUT(fn, field1, field2)			\
-  static VALUE								\
-  lpsolve_ ## fn(VALUE self)						\
-  {									\
-    INIT_LP;								\
-    int status = NUM2INT(rb_ivar_get(self, rb_intern("@status")));	\
-    if (SOLVE_NOT_CALLED == status)					\
-      return rb_float_new(0);						\
-    return rb_float_new(lp->field2 - lp->field1);			\
+#define LPSOLVE_0_IN_TIME_OUT(fn, field1, field2)                       \
+  static VALUE                                                          \
+  lpsolve_ ## fn(VALUE self)                                            \
+  {                                                                     \
+    INIT_LP;                                                            \
+    int status = NUM2INT(rb_ivar_get(self, rb_intern("@status")));      \
+    if (SOLVE_NOT_CALLED == status)                                     \
+      return rb_float_new(0);                                           \
+    return rb_float_new(lp->field2 - lp->field1);                       \
   }
 
 /** \def LPSOLVE_1_BOOL_IN_BOOL_OUT
@@ -158,20 +158,20 @@ if (NULL == lp) return Qnil;			\
    returns the boolean statuc back to Ruby.  That is, if lp is not \a
    NULL we return Qtrue. If lp is \a NULL, we return \a Qnil.
 */
-#define LPSOLVE_1_BOOL_IN_BOOL_OUT(fn)				\
-  static VALUE							\
-  lpsolve_ ## fn(VALUE self, VALUE param1)			\
-  {								\
-    INIT_LP;							\
-    if (param1 != Qtrue && param1 != Qfalse) {			\
-      report(lp, IMPORTANT,					\
-	     "%s: Parameter is not a boolean.\n",		\
-	     __FUNCTION__);					\
-      return Qnil;						\
-    } else {							\
-      unsigned char turnon = param1 == Qtrue ? 1 : 0;		\
-      RETURN_BOOL(fn(lp, turnon));				\
-    }								\
+#define LPSOLVE_1_BOOL_IN_BOOL_OUT(fn)                          \
+  static VALUE                                                  \
+  lpsolve_ ## fn(VALUE self, VALUE param1)                      \
+  {                                                             \
+    INIT_LP;                                                    \
+    if (param1 != Qtrue && param1 != Qfalse) {                  \
+      report(lp, IMPORTANT,                                     \
+             "%s: Parameter is not a boolean.\n",               \
+             __FUNCTION__);                                     \
+      return Qnil;                                              \
+    } else {                                                    \
+      unsigned char turnon = param1 == Qtrue ? 1 : 0;           \
+      RETURN_BOOL(fn(lp, turnon));                              \
+    }                                                           \
   }
 
 /** \def LPSOLVE_1_IN_BOOL_OUT
@@ -185,18 +185,18 @@ if (NULL == lp) return Qnil;			\
    name string to use in an error message, e.g "an integer"; \a
    convert a Ruby conversion macro like \a FIX2INT.
 */
-#define LPSOLVE_1_IN_BOOL_OUT(fn, type, typename, convert)	\
-  static VALUE							\
-  lpsolve_ ## fn(VALUE self, VALUE param1)			\
-  {								\
-    INIT_LP;							\
-    if (TYPE(param1) != type) {					\
-      report(lp, IMPORTANT,					\
-	     "%s: Parameter is not %s.\n",			\
-	     __FUNCTION__, typename);				\
-      return Qnil;						\
-    }								\
-    RETURN_BOOL(fn(lp, convert(param1)));			\
+#define LPSOLVE_1_IN_BOOL_OUT(fn, type, typename, convert)      \
+  static VALUE                                                  \
+  lpsolve_ ## fn(VALUE self, VALUE param1)                      \
+  {                                                             \
+    INIT_LP;                                                    \
+    if (TYPE(param1) != type) {                                 \
+      report(lp, IMPORTANT,                                     \
+             "%s: Parameter is not %s.\n",                      \
+             __FUNCTION__, typename);                           \
+      return Qnil;                                              \
+    }                                                           \
+    RETURN_BOOL(fn(lp, convert(param1)));                       \
   }
 
 /** \def LPSOLVE_1_IN_NUM_OUT 
@@ -212,18 +212,18 @@ if (NULL == lp) return Qnil;			\
    \a fn is the lpsolve function to call. 
 
 */
-#define LPSOLVE_1_IN_NUM_OUT(fn, type, typename, convert)	\
-  static VALUE							\
-  lpsolve_ ## fn (VALUE self, VALUE param1)			\
-  {								\
-    INIT_LP							\
-    if (TYPE(param1) != type) {					\
-      report(lp, IMPORTANT,					\
-	     "%s: Parameter is not %s.\n",			\
-	     __FUNCTION__, typename);				\
-      return Qnil;						\
-    }								\
-    return rb_float_new(fn(lp, convert(param1)));		\
+#define LPSOLVE_1_IN_NUM_OUT(fn, type, typename, convert)       \
+  static VALUE                                                  \
+  lpsolve_ ## fn (VALUE self, VALUE param1)                     \
+  {                                                             \
+    INIT_LP                                                     \
+    if (TYPE(param1) != type) {                                 \
+      report(lp, IMPORTANT,                                     \
+             "%s: Parameter is not %s.\n",                      \
+             __FUNCTION__, typename);                           \
+      return Qnil;                                              \
+    }                                                           \
+    return rb_float_new(fn(lp, convert(param1)));               \
   }
 
 /** \def LPSOLVE_1_IN_STR_OUT 
@@ -238,18 +238,18 @@ if (NULL == lp) return Qnil;			\
    function. For example \a arg1 could be \a FIX2INT(param1).
 
 */
-#define LPSOLVE_1_IN_STR_OUT(fn, type, typename, convert)	\
-  static VALUE							\
-  lpsolve_ ## fn (VALUE self, VALUE param1)			\
-  {								\
-    INIT_LP							\
-    if (TYPE(param1) != type) {					\
-      report(lp, IMPORTANT,					\
-	     "%s: Parameter is not %s.\n",			\
-	     __FUNCTION__, typename);				\
-      return Qnil;						\
-    }								\
-    return rb_str_new2(fn(lp, convert(param1)));		\
+#define LPSOLVE_1_IN_STR_OUT(fn, type, typename, convert)       \
+  static VALUE                                                  \
+  lpsolve_ ## fn (VALUE self, VALUE param1)                     \
+  {                                                             \
+    INIT_LP                                                     \
+    if (TYPE(param1) != type) {                                 \
+      report(lp, IMPORTANT,                                     \
+             "%s: Parameter is not %s.\n",                      \
+             __FUNCTION__, typename);                           \
+      return Qnil;                                              \
+    }                                                           \
+    return rb_str_new2(fn(lp, convert(param1)));                \
   }
 
 /** \def LPSOLVE_1_IN_BOOL_OUT 
@@ -259,18 +259,18 @@ if (NULL == lp) return Qnil;			\
    integer return value back to Ruby.  That is, if \a lp is not \a
    NULL. If it's \a NULL, we return \a nil.
 */
-#define LPSOLVE_1_STR_IN_BOOL_OUT(fn)				\
-  static VALUE							\
-  lpsolve_ ## fn (VALUE self, VALUE str)			\
-  {								\
-    INIT_LP;							\
-    if (TYPE(str) != T_STRING) {				\
-      report(lp, IMPORTANT,					\
-	     "%s: Parameter 1 is not a string\n",		\
-	     __FUNCTION__);					\
-      return Qfalse;						\
-    }								\
-    RETURN_BOOL(fn(lp, RSTRING_PTR(str)));			\
+#define LPSOLVE_1_STR_IN_BOOL_OUT(fn)                           \
+  static VALUE                                                  \
+  lpsolve_ ## fn (VALUE self, VALUE str)                        \
+  {                                                             \
+    INIT_LP;                                                    \
+    if (TYPE(str) != T_STRING) {                                \
+      report(lp, IMPORTANT,                                     \
+             "%s: Parameter 1 is not a string\n",               \
+             __FUNCTION__);                                     \
+      return Qfalse;                                            \
+    }                                                           \
+    RETURN_BOOL(fn(lp, RSTRING_PTR(str)));                      \
   }
 
 /** \def LPSOLVE_1_IN_STATUS_OUT 
@@ -285,39 +285,39 @@ if (NULL == lp) return Qnil;			\
    function. For example \a arg1 could be \a FIX2INT(param1).
 
 */
-#define LPSOLVE_1_IN_STATUS_OUT(fn, arg1)			\
-  static VALUE							\
-  lpsolve_ ## fn (VALUE self, VALUE param1)			\
-  {								\
-    INIT_LP							\
-    fn(lp, arg1);						\
-    return Qtrue;						\
+#define LPSOLVE_1_IN_STATUS_OUT(fn, arg1)                       \
+  static VALUE                                                  \
+  lpsolve_ ## fn (VALUE self, VALUE param1)                     \
+  {                                                             \
+    INIT_LP                                                     \
+    fn(lp, arg1);                                               \
+    return Qtrue;                                               \
   }
 
-#define LPSOLVE_SET_VARTYPE(fn)						\
-static VALUE								\
- lpsolve_ ## fn (VALUE self, VALUE column_num, 	VALUE new_bool)		\
-{									\
-  INIT_LP;								\
-  if (new_bool != Qtrue && new_bool != Qfalse && new_bool != Qnil) {	\
-    report(lp, IMPORTANT,						\
-	   "%s: Parameter is not a boolean or nil.\n",			\
-	   __FUNCTION__);						\
-    return Qfalse;							\
-  } else {								\
-    RETURN_BOOL(fn(lp, FIX2INT(column_num), Qtrue == new_bool));	\
-  }									\
+#define LPSOLVE_SET_VARTYPE(fn)                                         \
+static VALUE                                                            \
+ lpsolve_ ## fn (VALUE self, VALUE column_num,  VALUE new_bool)         \
+{                                                                       \
+  INIT_LP;                                                              \
+  if (new_bool != Qtrue && new_bool != Qfalse && new_bool != Qnil) {    \
+    report(lp, IMPORTANT,                                               \
+           "%s: Parameter is not a boolean or nil.\n",                  \
+           __FUNCTION__);                                               \
+    return Qfalse;                                                      \
+  } else {                                                              \
+    RETURN_BOOL(fn(lp, FIX2INT(column_num), Qtrue == new_bool));        \
+  }                                                                     \
 }
 
 
 static VALUE
-lpsolve_set_binary (VALUE self, VALUE column_num, 	VALUE new_bool)
+lpsolve_set_binary (VALUE self, VALUE column_num,       VALUE new_bool)
 {
   INIT_LP;
   if (new_bool != Qtrue && new_bool != Qfalse && new_bool != Qnil) {
     report(lp, IMPORTANT,
-	   "%s: Parameter is not a boolean or nil.\n",
-	   __FUNCTION__);
+           "%s: Parameter is not a boolean or nil.\n",
+           __FUNCTION__);
     return Qfalse;
   } else {
     RETURN_BOOL(set_binary(lp, FIX2INT(column_num), Qtrue == new_bool));
@@ -354,7 +354,7 @@ static void lpsolve_free(void *lp);
 */
 static VALUE 
 lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs, 
-			 VALUE constr_type, VALUE rh) 
+                         VALUE constr_type, VALUE rh) 
 {
   int i_constr_type = FIX2INT(constr_type);
   REAL r_rh = NUM2DBL(rh);
@@ -369,22 +369,22 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
 
   if (TYPE(name) != T_STRING && name != Qnil) {
     report(lp, IMPORTANT, 
-	   "%s: constraint name, parameter 1, should be nil or a string.\n", 
-	   __FUNCTION__);
+           "%s: constraint name, parameter 1, should be nil or a string.\n", 
+           __FUNCTION__);
     return Qnil;
   }
 
   if (TYPE(row_coeffs) != T_ARRAY) {
     report(lp, IMPORTANT, 
-	   "%s: row coefficients, parameter 2 is not an array.\n",
-	   __FUNCTION__);
+           "%s: row coefficients, parameter 2 is not an array.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
   if (TYPE(constr_type) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: constraint type, parameter 3, is not a number.\n", 
-	   __FUNCTION__);
+           "%s: constraint type, parameter 3, is not a number.\n", 
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -394,8 +394,8 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
   case LE: break;
   default:
     report(lp, IMPORTANT, 
-	   "%s: constraint type, parameter 3, should be LE, EQ, or GE.\n", 
-	   __FUNCTION__);
+           "%s: constraint type, parameter 3, should be LE, EQ, or GE.\n", 
+           __FUNCTION__);
     return Qnil;
   }
   
@@ -404,8 +404,8 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
 
   if (0 == count)  {
     report(lp, IMPORTANT, 
-	   "%s: row coefficients array has to have at least one item.\n",
-	   __FUNCTION__);
+           "%s: row coefficients array has to have at least one item.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -417,40 +417,40 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
     int i_col;
     if (TYPE(*p_row_coeff) != T_ARRAY) {
       report(lp, IMPORTANT, 
-	     "%s: row coeffient element %d is not an array.\n", 
-	     __FUNCTION__, i);
+             "%s: row coeffient element %d is not an array.\n", 
+             __FUNCTION__, i);
       goto done;
     }
     if (RARRAY_LEN(*p_row_coeff) != 2) {
       report(lp, IMPORTANT, 
-	     "%s: row coeffient element %d is not an array tuple.\n", 
-	     __FUNCTION__, i);
+             "%s: row coeffient element %d is not an array tuple.\n", 
+             __FUNCTION__, i);
       goto done;
     } else {
       VALUE *tuple = RARRAY_PTR(*p_row_coeff);
       if (TYPE(tuple[0]) != T_FIXNUM) {
-	report(lp, IMPORTANT, 
-	       "%s: Column number, first element, of row coefficients at " \
-	       "tuple %d is not a integer.\n", __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Column number, first element, of row coefficients at " \
+               "tuple %d is not a integer.\n", __FUNCTION__, i);
+        goto done;
       }
       switch (TYPE(tuple[1])) {
       case T_FIXNUM:
       case T_FLOAT: break;
       default:
-	report(lp, IMPORTANT, 
-	       "%s: Coefficient value, second element, of row coeffients at "
-	       "tuple %d is not an integer.\n", __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Coefficient value, second element, of row coeffients at "
+               "tuple %d is not an integer.\n", __FUNCTION__, i);
+        goto done;
       }
 
       i_col = FIX2INT(tuple[0]);
       if (i_col <= 0 || i_col > lp->columns) {
-	report(lp, IMPORTANT, 
-	       "%s: Column number, first element, of row coeffients at " \
-	       "tuple %d, value %d, is not in the range 1..%d\n", 
-	       __FUNCTION__, i, i_col, lp->columns);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Column number, first element, of row coeffients at " \
+               "tuple %d, value %d, is not in the range 1..%d\n", 
+               __FUNCTION__, i, i_col, lp->columns);
+        goto done;
       }
       colno[i] = i_col;
       row[i]   = NUM2DBL(tuple[1]);
@@ -488,7 +488,7 @@ lpsolve_add_constraintex(VALUE self, VALUE name, VALUE row_coeffs,
 */
 static VALUE 
 lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority, 
-		VALUE sos_vars) 
+                VALUE sos_vars) 
 {
   int i_sos_type = FIX2INT(sos_type);
   int i_priority = FIX2INT(priority);
@@ -503,13 +503,13 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
   
   if (TYPE(sos_type) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: SOS type, parameter 2, is not a number.\n", __FUNCTION__);
+           "%s: SOS type, parameter 2, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   
   if (TYPE(priority) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: priority, parameter 3, not a number.\n", __FUNCTION__);
+           "%s: priority, parameter 3, not a number.\n", __FUNCTION__);
     return Qnil;
   }
   if (TYPE(name) != T_STRING) {
@@ -518,7 +518,7 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
   }
   if (i_sos_type < 1) {
     report(lp, IMPORTANT, "%s: SOS type (%ld) is less than 1.\n",
-	   __FUNCTION__, i_sos_type);
+           __FUNCTION__, i_sos_type);
     return Qnil;
   }
   
@@ -531,8 +531,8 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
 
   if (0 == count)  {
     report(lp, IMPORTANT, 
-	   "%s: SOS vars array has to have at least one item.\n",
-	   __FUNCTION__);
+           "%s: SOS vars array has to have at least one item.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -543,27 +543,27 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
   for (i = 0; i < count; i++) {
     if (TYPE(*p_sos_var) != T_ARRAY) {
       report(lp, IMPORTANT, 
-	     "%s: SOS vars element %d is not an array.\n", __FUNCTION__, i);
+             "%s: SOS vars element %d is not an array.\n", __FUNCTION__, i);
       goto done;
     }
     if (RARRAY_LEN(*p_sos_var) != 2) {
       report(lp, IMPORTANT, 
-	     "%s: SOS vars element %d is not an array tuple.\n", __FUNCTION__,
-	     i);
+             "%s: SOS vars element %d is not an array tuple.\n", __FUNCTION__,
+             i);
       goto done;
     } else {
       VALUE *tuple = RARRAY_PTR(*p_sos_var);
       if (TYPE(tuple[0]) != T_FIXNUM) {
-	report(lp, IMPORTANT, 
-	       "%s: First element of SOS vars at tuple %d " \
-	       "is not a integer.\n",  __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: First element of SOS vars at tuple %d " \
+               "is not a integer.\n",  __FUNCTION__, i);
+        goto done;
       }
       if (TYPE(tuple[1]) != T_FIXNUM) {
-	report(lp, IMPORTANT, 
-	       "%s: Second element of SOS vars at tuple %d " \
-	       "is not an integer.\n", __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Second element of SOS vars at tuple %d " \
+               "is not an integer.\n", __FUNCTION__, i);
+        goto done;
       }
       vars[i] = FIX2INT(tuple[0]);
       weights[i] = FIX2INT(tuple[1]);
@@ -571,7 +571,7 @@ lpsolve_add_SOS(VALUE self, VALUE name, VALUE sos_type, VALUE priority,
     p_sos_var++;
   }
   i_ret = add_SOS(lp, RSTRING_PTR(name), i_sos_type, i_priority, 
-		  count, vars, weights);
+                  count, vars, weights);
   if (i_ret != 0)
     ret = INT2FIX(i_ret);
 
@@ -722,8 +722,8 @@ lpsolve_get_col_name(VALUE self, VALUE column_num)
 
   if (TYPE(column_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not an integer.\n", 
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not an integer.\n", 
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -745,8 +745,8 @@ lpsolve_get_col_num(VALUE self, VALUE column_name)
   
   if (TYPE(column_name) != T_STRING) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not a string.\n", 
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not a string.\n", 
+           __FUNCTION__);
     return Qnil;
   } else {
     int retval = get_col_num(lp, RSTRING_PTR(column_name));
@@ -920,12 +920,12 @@ lpsolve_get_mat(VALUE self, VALUE row_num, VALUE col_num)
   INIT_LP;
   if (TYPE(row_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
+           "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   if (TYPE(col_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 2, is not a number.\n", __FUNCTION__);
+           "%s: column number, parameter 2, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   return rb_float_new(get_mat(lp, FIX2INT(row_num), FIX2INT(col_num)));
@@ -953,8 +953,8 @@ lpsolve_get_mip_gap(VALUE self, VALUE abs_rel)
   INIT_LP;
   if (abs_rel != Qtrue && abs_rel != Qfalse && abs_rel != Qnil) {
     report(lp, IMPORTANT,
-	   "%s: Parameter is not a boolean or nil.\n",
-	   __FUNCTION__);
+           "%s: Parameter is not a boolean or nil.\n",
+           __FUNCTION__);
     return Qnil;
   } else {
     return rb_float_new(get_mip_gap(lp, Qtrue == abs_rel));
@@ -998,8 +998,8 @@ lpsolve_get_origcol_name(VALUE self, VALUE column_num)
   Data_Get_Struct(self, lprec, lp);
   if (TYPE(column_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not an integer.\n", 
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not an integer.\n", 
+           __FUNCTION__);
     return Qnil;
   }
   psz_col_name = get_origcol_name(lp, FIX2INT(column_num));
@@ -1030,7 +1030,7 @@ lpsolve_get_origrow_name(VALUE self, VALUE row_num)
   INIT_LP;
   if (TYPE(row_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
+           "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   psz_col_name = get_origrow_name(lp, FIX2INT(row_num));
@@ -1087,7 +1087,7 @@ lpsolve_get_row(VALUE self, VALUE row_num)
 
   if (TYPE(row_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
+           "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   i_columns =  get_Ncolumns(lp); /* Yep, Ncolumns, not Nrows. */
@@ -1130,7 +1130,7 @@ lpsolve_get_row_name(VALUE self, VALUE row_num)
   INIT_LP;
   if (TYPE(row_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
+           "%s: row number, parameter 1, is not a number.\n", __FUNCTION__);
     return Qnil;
   }
   psz_col_name = get_row_name(lp, FIX2INT(row_num));
@@ -1248,13 +1248,13 @@ static VALUE lpsolve_get_statustext(int argc, VALUE *argv, VALUE self)
       statuscode = rb_ivar_get(self, rb_intern("@status"));
     else if (TYPE(statuscode) != T_FIXNUM) {
       report(lp, IMPORTANT, "%s: Parameter is not nil or an integer.\n",
-	     __FUNCTION__);
+             __FUNCTION__);
       return Qnil;
     }
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0 or 1)", 
-	     i_scanned);
+             i_scanned);
   }
 
   i_statuscode = FIX2INT(statuscode);
@@ -1471,7 +1471,7 @@ lpsolve_logfunction(lprec *lp, void *userhandle, char *buf)
 
 static VALUE
 lpsolve_make_lp(VALUE class_or_model_name, VALUE num_constraints, 
-		VALUE num_vars) 
+                VALUE num_vars) 
 {
   int i_constraints = NUM2INT(num_constraints);
   int i_vars = NUM2INT(num_vars);
@@ -1565,7 +1565,7 @@ LPSOLVE_0_IN_STATUS_OUT(print_tableau)
 */
 static VALUE
 lpsolve_read_LP(VALUE model, VALUE filename, VALUE verbosity, 
-		VALUE model_name) 
+                VALUE model_name) 
 {
   lprec *lp;
 
@@ -1644,8 +1644,8 @@ lpsolve_print_str(VALUE self, VALUE str)
 
   if (TYPE(str) != T_STRING) {
     report(lp, IMPORTANT, 
-	   "%s: parameter 2 is not a string.\n",
-	   __FUNCTION__);
+           "%s: parameter 2 is not a string.\n",
+           __FUNCTION__);
     return Qfalse;
   }
   
@@ -1808,18 +1808,18 @@ LPSOLVE_SET_VARTYPE(set_binary)
 */
 static VALUE
 lpsolve_set_bounds(VALUE self, VALUE column_num, VALUE lower_bound, 
-		   VALUE upper_bound)
+                   VALUE upper_bound)
 {
   INIT_LP;
   if (TYPE(column_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not an integer.\n",
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not an integer.\n",
+           __FUNCTION__);
     return Qfalse;
   }
 
   RETURN_BOOL(set_bounds(lp, FIX2INT(column_num), 
-			 NUM2DBL(lower_bound), NUM2DBL(upper_bound)));
+                         NUM2DBL(lower_bound), NUM2DBL(upper_bound)));
 }
 
 /** A wrapper for set_col_name
@@ -1832,15 +1832,15 @@ lpsolve_set_col_name(VALUE self, VALUE column_num, VALUE new_name)
 
   if (TYPE(column_num) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not an integer.\n",
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not an integer.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
   if (TYPE(new_name) != T_STRING) {
     report(lp, IMPORTANT, 
-	   "%s: new name, parameter 2, is not a string.\n",
-	   __FUNCTION__);
+           "%s: new name, parameter 2, is not a string.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -1912,8 +1912,8 @@ lpsolve_set_lowbo(VALUE self, VALUE column, VALUE val)
   INIT_LP;
   if (TYPE(column) != T_FIXNUM) {
     report(lp, IMPORTANT, 
-	   "%s: column number, parameter 1, is not an integer.\n",
-	   __FUNCTION__);
+           "%s: column number, parameter 1, is not an integer.\n",
+           __FUNCTION__);
     return Qnil;
   }
   RETURN_BOOL(set_lowbo(lp, FIX2INT(column), NUM2DBL(val)));
@@ -1971,8 +1971,8 @@ lpsolve_set_mip_gap(VALUE self, VALUE abs_rel, VALUE val)
   INIT_LP;
   if (abs_rel != Qtrue && abs_rel != Qfalse && abs_rel != Qnil) {
     report(lp, IMPORTANT,
-	   "%s: Parameter is not a boolean or nil.\n",
-	   __FUNCTION__);
+           "%s: Parameter is not a boolean or nil.\n",
+           __FUNCTION__);
     return Qfalse;
   } else {
     set_mip_gap(lp, Qtrue == abs_rel, NUM2DBL(val));
@@ -2000,8 +2000,8 @@ lpsolve_set_obj_fnex(VALUE self, VALUE row_coeffs)
   /***FIXME: combine common parts of this with add_constraintex ****/
   if (TYPE(row_coeffs) != T_ARRAY) {
     report(lp, IMPORTANT, 
-	   "%s: row coefficients parameter is not an array.\n",
-	   __FUNCTION__);
+           "%s: row coefficients parameter is not an array.\n",
+           __FUNCTION__);
     return Qnil;
   }
 
@@ -2014,40 +2014,40 @@ lpsolve_set_obj_fnex(VALUE self, VALUE row_coeffs)
     int i_col;
     if (TYPE(*p_row_coeff) != T_ARRAY) {
       report(lp, IMPORTANT, 
-	     "%s: row coeffient element %d is not an array.\n", 
-	     __FUNCTION__, i);
+             "%s: row coeffient element %d is not an array.\n", 
+             __FUNCTION__, i);
       goto done;
     }
     if (RARRAY_LEN(*p_row_coeff) != 2) {
       report(lp, IMPORTANT, 
-	     "%s: row coeffient element %d is not an array tuple.\n", 
-	     __FUNCTION__, i);
+             "%s: row coeffient element %d is not an array tuple.\n", 
+             __FUNCTION__, i);
       goto done;
     } else {
       VALUE *tuple = RARRAY_PTR(*p_row_coeff);
       if (TYPE(tuple[0]) != T_FIXNUM) {
-	report(lp, IMPORTANT, 
-	       "%s: Column number, first element, of row coefficients at " \
-	       "tuple %d is not a integer.\n", __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Column number, first element, of row coefficients at " \
+               "tuple %d is not a integer.\n", __FUNCTION__, i);
+        goto done;
       }
       switch (TYPE(tuple[1])) {
       case T_FIXNUM:
       case T_FLOAT: break;
       default:
-	report(lp, IMPORTANT, 
-	       "%s: Coefficient value, second element, of row coeffients at "
-	       "tuple %d is not an integer.\n", __FUNCTION__, i);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Coefficient value, second element, of row coeffients at "
+               "tuple %d is not an integer.\n", __FUNCTION__, i);
+        goto done;
       }
 
       i_col = FIX2INT(tuple[0]);
       if (i_col <= 0 || i_col > lp->columns) {
-	report(lp, IMPORTANT, 
-	       "%s: Column number, first element, of row coeffients at " \
-	       "tuple %d is in the range 1..%d\n", 
-	       __FUNCTION__, i, lp->columns);
-	goto done;
+        report(lp, IMPORTANT, 
+               "%s: Column number, first element, of row coeffients at " \
+               "tuple %d is in the range 1..%d\n", 
+               __FUNCTION__, i, lp->columns);
+        goto done;
       }
       colno[i] = i_col;
       row[i]   = NUM2DBL(tuple[1]);
@@ -2076,18 +2076,18 @@ LPSOLVE_1_STR_IN_BOOL_OUT(set_outputfile)
     @return \a true if no errors.
 */
 static VALUE lpsolve_set_presolve(VALUE self, VALUE do_presolve, 
-				  VALUE maxloops) 
+                                  VALUE maxloops) 
 {
   INIT_LP;
   if (TYPE(do_presolve) != T_FIXNUM) {
     report(lp, IMPORTANT, "%s: Presolve parameter is not a number (bitmask).\n",
-	   __FUNCTION__);
+           __FUNCTION__);
     return Qnil;
   }
   if (TYPE(maxloops) != T_FIXNUM ) {
     report(lp, IMPORTANT, 
-	   "%s: maxloops parameter should be a number (bitmask).\n",
-	   __FUNCTION__);
+           "%s: maxloops parameter should be a number (bitmask).\n",
+           __FUNCTION__);
     return Qnil;
   }
   set_presolve(lp, FIX2INT(do_presolve), FIX2INT(maxloops));
@@ -2105,7 +2105,7 @@ static VALUE lpsolve_set_presolve1(VALUE self, VALUE do_presolve)
   INIT_LP;
   if (TYPE(do_presolve) != T_FIXNUM) {
     report(lp, IMPORTANT, "%s: Presolve parameter is not a number (bitmask).\n",
-	   __FUNCTION__);
+           __FUNCTION__);
     return Qnil;
   }
   i_maxloops = get_presolveloops(lp);
@@ -2113,6 +2113,23 @@ static VALUE lpsolve_set_presolve1(VALUE self, VALUE do_presolve)
   return Qtrue;
 }
 
+#if GET_RH_FIXED
+/** A wrapper for get_rh().
+
+    Get the value of the right hand side (RHS) vector (column 0) for
+    the specified row.
+
+    @param self self
+    @param row_num the row number of the RHS to be retrieved
+    Must be between 0 and number of rows in the lp.
+
+*/
+static VALUE
+lpsolve_get_rh(VALUE self, VALUE row_num)
+{
+  LPSOLVE_1_IN_NUM_OUT(get_rh, T_FIXNUM, "an integer", FIX2INT);
+}
+#endif
 
 /** A wrapper for set_rh().
 
@@ -2220,7 +2237,7 @@ static VALUE lpsolve_set_status(VALUE self, VALUE newstatus)
     return rb_ivar_set(self, rb_intern("@status"), newstatus);
   else
     report(lp, IMPORTANT, 
-	   "%s: status should be a Fixnum.\n", __FUNCTION__);
+           "%s: status should be a Fixnum.\n", __FUNCTION__);
   return Qnil;
 }
 
@@ -2369,7 +2386,7 @@ LPSOLVE_1_STR_IN_BOOL_OUT(str_add_column)
 */
 static VALUE
 lpsolve_str_add_constraint(VALUE self, VALUE constraint, 
-			  VALUE compare, VALUE num_constraints) 
+                          VALUE compare, VALUE num_constraints) 
 {
   char *psz_constraint = RSTRING_PTR(constraint);
   int  i_compare = NUM2INT(compare);
@@ -2493,8 +2510,8 @@ lpsolve_version(VALUE module_or_class)
   int build;
   lp_solve_version(&major_version, &minor_version, &release, &build);
   return rb_ary_new3(4, 
-		     INT2FIX(major_version), INT2FIX(minor_version),
-		     INT2FIX(release), INT2FIX(build));
+                     INT2FIX(major_version), INT2FIX(minor_version),
+                     INT2FIX(release), INT2FIX(build));
 }
 
 /** A wrapper for write_basis(). 
@@ -2543,16 +2560,16 @@ static VALUE lpsolve_write_lp(int argc, VALUE *argv, VALUE self)
       break;
     case 1: 
       if (filename == Qnil)
-	RETURN_BOOL(write_lp(lp, NULL));
+        RETURN_BOOL(write_lp(lp, NULL));
       else if (TYPE(filename) != T_STRING) {
-	report(lp, IMPORTANT, "%s: Parameter is not nil or a string filename.\n",
-	       __FUNCTION__);
-	return Qnil;
+        report(lp, IMPORTANT, "%s: Parameter is not nil or a string filename.\n",
+               __FUNCTION__);
+        return Qnil;
       } else
-	RETURN_BOOL(write_lp(lp, RSTRING_PTR(filename)));
+        RETURN_BOOL(write_lp(lp, RSTRING_PTR(filename)));
     default:
       rb_raise(rb_eArgError, "wrong number of arguments (%d for 0 or 1)", 
-	       i_scanned);
+               i_scanned);
     }
     return Qfalse;
   }
@@ -2587,16 +2604,16 @@ static VALUE lpsolve_write_mps(int argc, VALUE *argv, VALUE self)
       break;
     case 1: 
       if (filename == Qnil)
-	RETURN_BOOL(write_mps(lp, NULL));
+        RETURN_BOOL(write_mps(lp, NULL));
       else if (TYPE(filename) != T_STRING) {
-	report(lp, IMPORTANT, "%s: Parameter is not nil or a string filename.\n",
-	       __FUNCTION__);
-	return Qnil;
+        report(lp, IMPORTANT, "%s: Parameter is not nil or a string filename.\n",
+               __FUNCTION__);
+        return Qnil;
       } else
-	RETURN_BOOL(write_mps(lp, RSTRING_PTR(filename)));
+        RETURN_BOOL(write_mps(lp, RSTRING_PTR(filename)));
     default:
       rb_raise(rb_eArgError, "wrong number of arguments (%d for 0 or 1)", 
-	       i_scanned);
+               i_scanned);
     }
     return Qfalse;
   }
@@ -2624,13 +2641,13 @@ void Init_lpsolve()
 
   /* Class Methods */
   rb_define_method(rb_cLPSolve, "add_constraintex", 
-		   lpsolve_add_constraintex, 4);
+                   lpsolve_add_constraintex, 4);
   rb_define_method(rb_cLPSolve, "add_SOS",          lpsolve_add_SOS, 4);
   rb_define_method(rb_cLPSolve, "default_basis",    lpsolve_default_basis, 0);
   rb_define_method(rb_cLPSolve, "del_column",       lpsolve_del_column, 1);
   rb_define_method(rb_cLPSolve, "del_constraint",   lpsolve_del_constraint, 1);
   rb_define_method(rb_cLPSolve, "get_bb_depthlimit",
-		   lpsolve_get_bb_depthlimit, 0);
+                   lpsolve_get_bb_depthlimit, 0);
   rb_define_method(rb_cLPSolve, "get_bb_rule",      lpsolve_get_bb_rule, 0);
   rb_define_method(rb_cLPSolve, "get_col_name",     lpsolve_get_col_name, 1);
   rb_define_method(rb_cLPSolve, "get_col_num",      lpsolve_get_col_num, 1);
@@ -2641,36 +2658,39 @@ void Init_lpsolve()
   rb_define_method(rb_cLPSolve, "get_mip_gap",      lpsolve_get_mip_gap, 1);
   rb_define_method(rb_cLPSolve, "get_Ncolumns",     lpsolve_get_Ncolumns, 0);
   rb_define_method(rb_cLPSolve, "get_Norig_columns",
-		   lpsolve_get_Norig_columns, 0);
+                   lpsolve_get_Norig_columns, 0);
   rb_define_method(rb_cLPSolve, "get_Norig_rows",   lpsolve_get_Norig_rows, 0);
   rb_define_method(rb_cLPSolve, "get_Nrows",        lpsolve_get_Nrows, 0);
   rb_define_method(rb_cLPSolve, "get_nonzeros",     lpsolve_get_nonzeros, 0);
   rb_define_method(rb_cLPSolve, "get_mat",          lpsolve_get_mat, 2);
   rb_define_method(rb_cLPSolve, "get_objective",    lpsolve_get_objective, 0);
   rb_define_method(rb_cLPSolve, "get_origcol_name",
-		   lpsolve_get_origcol_name, 1);
+                   lpsolve_get_origcol_name, 1);
   rb_define_method(rb_cLPSolve, "get_origrow_name",
-		   lpsolve_get_origrow_name, 1);
+                   lpsolve_get_origrow_name, 1);
   rb_define_method(rb_cLPSolve, "get_presolve",     lpsolve_get_presolve, 0);
   rb_define_method(rb_cLPSolve, "get_presolveloops",
-		   lpsolve_get_presolveloops, 0);
+                   lpsolve_get_presolveloops, 0);
+#ifdef GET_RH_FIXED
+  rb_define_method(rb_cLPSolve, "get_rh",           lpsolve_get_rh, 1);
+#endif
   rb_define_method(rb_cLPSolve, "get_row",          lpsolve_get_row, 1);
   rb_define_method(rb_cLPSolve, "get_row_name",     lpsolve_get_row_name, 1);
   rb_define_method(rb_cLPSolve, "get_scaling",      lpsolve_get_scaling, 0);
   rb_define_method(rb_cLPSolve, "get_simplextype",  lpsolve_get_simplextype, 0);
   rb_define_method(rb_cLPSolve, "get_solutioncount",
-		   lpsolve_get_solutioncount, 0);
+                   lpsolve_get_solutioncount, 0);
   rb_define_method(rb_cLPSolve, "get_solutionlimit",
-		   lpsolve_get_solutionlimit, 0);
+                   lpsolve_get_solutionlimit, 0);
   rb_define_method(rb_cLPSolve, "get_status",       lpsolve_get_status, 0);
   rb_define_method(rb_cLPSolve, "get_statustext",   lpsolve_get_statustext, -1);
   rb_define_method(rb_cLPSolve, "get_timeout",      lpsolve_get_timeout, 0);
   rb_define_method(rb_cLPSolve, "get_total_iter",   lpsolve_get_total_iter, 0);
   rb_define_method(rb_cLPSolve, "get_upbo",         lpsolve_get_upbo, 1);
   rb_define_method(rb_cLPSolve, "get_var_dualresult", 
-		   lpsolve_get_var_dualresult, 1);
+                   lpsolve_get_var_dualresult, 1);
   rb_define_method(rb_cLPSolve, "get_var_primalresult", 
-		   lpsolve_get_var_primalresult, 1);
+                   lpsolve_get_var_primalresult, 1);
   rb_define_method(rb_cLPSolve, "get_variables",    lpsolve_get_variables, 0);
   rb_define_method(rb_cLPSolve, "get_verbose",      lpsolve_get_verbose, 0);
   rb_define_method(rb_cLPSolve, "initialize",       lpsolve_initialize, 2);
@@ -2680,9 +2700,9 @@ void Init_lpsolve()
   rb_define_method(rb_cLPSolve, "presolve=",        lpsolve_set_presolve1, 1);
   rb_define_method(rb_cLPSolve, "print",            lpsolve_print, 0);
   rb_define_method(rb_cLPSolve, "print_debugdump",  
-		   lpsolve_print_debugdump, 1);
+                   lpsolve_print_debugdump, 1);
   rb_define_method(rb_cLPSolve, "print_constraints",
-		   lpsolve_print_constraints, 1);
+                   lpsolve_print_constraints, 1);
   rb_define_method(rb_cLPSolve, "print_duals",      lpsolve_print_duals, 0);
   rb_define_method(rb_cLPSolve, "print_lp",         lpsolve_print_lp, 0);
   rb_define_method(rb_cLPSolve, "print_objective",  lpsolve_print_objective, 0);
@@ -2692,7 +2712,7 @@ void Init_lpsolve()
   rb_define_method(rb_cLPSolve, "put_logfunc",      lpsolve_put_logfunc, 1);
   rb_define_method(rb_cLPSolve, "set_add_rowmode",  lpsolve_set_add_rowmode, 1);
   rb_define_method(rb_cLPSolve, "set_bb_depthlimit",
-		   lpsolve_set_bb_depthlimit, 1);
+                   lpsolve_set_bb_depthlimit, 1);
   rb_define_method(rb_cLPSolve, "set_bb_rule",      lpsolve_set_bb_rule, 1);
   rb_define_method(rb_cLPSolve, "set_binary",       lpsolve_set_binary, 2);
   rb_define_method(rb_cLPSolve, "set_bounds",       lpsolve_set_bounds, 3);
@@ -2715,7 +2735,7 @@ void Init_lpsolve()
   rb_define_method(rb_cLPSolve, "set_scaling",      lpsolve_set_scaling, 1);
   rb_define_method(rb_cLPSolve, "set_simplextype",  lpsolve_set_simplextype, 1);
   rb_define_method(rb_cLPSolve, "set_solutionlimit",
-		   lpsolve_set_solutionlimit, 1);
+                   lpsolve_set_solutionlimit, 1);
   rb_define_method(rb_cLPSolve, "set_status",       lpsolve_set_status, 1);
   rb_define_method(rb_cLPSolve, "set_timeout",      lpsolve_set_timeout, 1);
   rb_define_method(rb_cLPSolve, "set_trace",        lpsolve_set_trace, 1);
@@ -2723,11 +2743,11 @@ void Init_lpsolve()
   rb_define_method(rb_cLPSolve, "set_verbose",      lpsolve_set_verbose, 1);
   rb_define_method(rb_cLPSolve, "solve",            lpsolve_solve, 0);
   rb_define_method(rb_cLPSolve, "str_add_column",   lpsolve_str_add_column, 
-		   1);
+                   1);
   rb_define_method(rb_cLPSolve, "str_add_constraint", 
-		   lpsolve_str_add_constraint, 3);
+                   lpsolve_str_add_constraint, 3);
   rb_define_method(rb_cLPSolve, "str_set_obj_fn", 
-		   lpsolve_str_set_obj_fn, 1);
+                   lpsolve_str_set_obj_fn, 1);
   rb_define_method(rb_cLPSolve, "time_elapsed",     lpsolve_time_elapsed, 0);
   rb_define_method(rb_cLPSolve, "time_load",        lpsolve_time_load, 0);
   rb_define_method(rb_cLPSolve, "time_presolve",    lpsolve_time_presolve, 0);
@@ -2818,9 +2838,9 @@ void print(lprec *lp)
     {
       REAL val = get_mat(lp, 0, j);
       if (0.0 == val) 
-	fprintf(lp->outstream, "%8s ", "");
+        fprintf(lp->outstream, "%8s ", "");
       else {
-	  fprintf(lp->outstream, "%8g ", get_mat(lp, 0, j));
+          fprintf(lp->outstream, "%8g ", get_mat(lp, 0, j));
       }
     }
 
@@ -2830,12 +2850,12 @@ void print(lprec *lp)
     fprintf(lp->outstream, row_fmt, get_row_name(lp, i));
     for(j = 1; j <= lp->columns; j++) 
       {
-	REAL val = get_mat(lp, i, j);
-	if (0.0 == val) 
-	  fprintf(lp->outstream, "%8s ", "");
-	else {
-	  fprintf(lp->outstream, "%8g ", val);
-	}
+        REAL val = get_mat(lp, i, j);
+        if (0.0 == val) 
+          fprintf(lp->outstream, "%8s ", "");
+        else {
+          fprintf(lp->outstream, "%8g ", val);
+        }
       }
     if(is_constr_type(lp, i, GE))
       fprintf(lp->outstream, ">= ");
@@ -2897,16 +2917,16 @@ void print(lprec *lp)
     for (i=0; i<lp->SOS->sos_count; i++) {
       unsigned int j;
       fprintf(lp->outstream, "\t%s: Type: %d, with %d members",
-	      sos_list[i]->name, sos_list[i]->type, sos_list[i]->size);
+              sos_list[i]->name, sos_list[i]->type, sos_list[i]->size);
       for(j = 1; j <= sos_list[i]->size; j++) {
-	int i_col_num = sos_list[i]->members[j];
-	char *psz_col_name;
-	if (i_col_num <= lp->columns) {
-	  psz_col_name = get_col_name(lp, i_col_num);
-	  if (NULL != psz_col_name)
-	    fprintf(lp->outstream, "%s%s", (j > 1) ? ", " : ": ",
-		    psz_col_name);
-	}
+        int i_col_num = sos_list[i]->members[j];
+        char *psz_col_name;
+        if (i_col_num <= lp->columns) {
+          psz_col_name = get_col_name(lp, i_col_num);
+          if (NULL != psz_col_name)
+            fprintf(lp->outstream, "%s%s", (j > 1) ? ", " : ": ",
+                    psz_col_name);
+        }
       }
       fprintf(lp->outstream, "\n");
     }

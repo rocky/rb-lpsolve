@@ -21,7 +21,7 @@ FILES = FileList[
 ]
 
 desc "Create GEM spec file"
-default_spec = Gem::Specification.new do |spec|
+Gem::Specification.new do |spec|
   spec.name = PKG_NAME
   
   spec.homepage = "http://github.org/rocky/rb-lpsolve/"

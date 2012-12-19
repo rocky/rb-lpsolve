@@ -1,29 +1,32 @@
 #!/usr/bin/env rake
 # -*- Ruby -*-
 require 'rubygems'
+require 'fileutils'
+
+Gemspec_filename='rb-lpsolve.gemspec'
 
 ROOT_DIR = File.dirname(__FILE__)
 
 def gemspec
-  @gemspec ||= eval(File.read('.gemspec'), binding, '.gemspec')
+  @gemspec ||= eval(File.read(Gemspec_filename), binding, Gemspec_filename)
 end
 
-require 'rake/gempackagetask'
-task :default => [:package]
+require 'rubygems/package_task'
+desc "Build the gem"
+task :package=>:gem
+task :gem=>:gemspec do
+  Dir.chdir(ROOT_DIR) do
+    sh "gem build #{Gemspec_filename}"
+    FileUtils.mkdir_p 'pkg'
+    FileUtils.mv("#{gemspec.file_name}", "pkg/")
+  end
+end
 
 desc "Install the gem locally"
 task :install => :gem do
   Dir.chdir(ROOT_DIR) do
-    sh %{gem install --local pkg/#{gemspec.name}-#{gemspec.version}}
+    sh %{gem install --local pkg/#{gemspec.file_name}}
   end
-end
-
-# ---------  GEM package ------
-# Rake task to build the default package
-desc "Build all the packages (gem, tgz, zip)"
-Rake::GemPackageTask.new(gemspec) do |pkg|
-  pkg.need_zip = true
-  pkg.need_tar = true
 end
 
 ### Windows specification
@@ -55,6 +58,7 @@ task :doc do
   system("cd doc && ./run_doxygen")
 end
 
+task :default => [:test]
 require 'rake/testtask'
 desc 'Test the lpsolve shared object.'
 Rake::TestTask.new('test' => :ext) do |t|
